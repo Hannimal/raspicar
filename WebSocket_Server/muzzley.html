@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Muzzley Demo</title>
+  </head>
+  <body>
+
+    <img id="qrCodeContainer">
+
+    <script src="http://cdn.geo.muzzley.com/libraries/js/muzzley-client-0.2.1.min.js"></script>
+    <script>
+    
+    var socket = new WebSocket("ws://192.168.1.95:8080/ws");
+ 
+      socket.onopen = function(){  
+        console.log("connected"); 
+      }; 
+ 
+      socket.onmessage = function (message) {
+        console.log("receiving: " + message.data);
+      };
+ 
+      socket.onclose = function(){
+        console.log("disconnected"); 
+      };
+ 
+      sendMessage = function(message) {
+        socket.send(message);
+      };
+    
+    
+    
+    
+    
+      var myAppToken = '97f783b4c624b979';
+
+      muzzley.on('error', function (err) {
+        console.log("Error: " + err);
+      });
+
+      muzzley.connectApp(myAppToken, function (err, activity) {
+        if (err) return console.log("Connect error: " + err);
+
+        // Usually you'll want to show this Activity's QR code image
+        // or its id so that muzzley users can join.
+        // They are in the `activity.qrCodeUrl` and `activity.activityId`
+        // properties, respectively.
+        console.log(activity);
+        document.getElementById('qrCodeContainer').src = activity.qrCodeUrl;
+
+        activity.on('participantQuit', function (participant) {
+          // A participant quit
+        });
+
+        activity.on('participantJoin', function (participant) {
+
+          // A participant joined. Tell him to transform into a gamepad.
+          participant.changeWidget('gamepad', function (err) {
+            if (err) return console.log('changeWidget error: ' + err );
+          });
+
+          participant.on('action', function (action) {
+            // The action object represents the participant's interaction.
+            // In this case it might be "button 'a' was pressed".
+            console.log(action);
+            sendMessage(action);
+          });
+
+          participant.on('quit', function () {
+            // You can also check for participant quit events
+            // directly in each participant object.
+          });
+
+        });
+      });
+    </script>
+
+  </body>
+</html>

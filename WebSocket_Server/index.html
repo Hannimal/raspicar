@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body { margin: 0px; padding: 0px; }
+      canvas { border: 1px solid #9C9898; }
+    </style>
+    <script>
+ 
+      var socket = new WebSocket("ws://192.168.1.95:8080/ws");
+ 
+      socket.onopen = function(){  
+        console.log("connected"); 
+      }; 
+ 
+      socket.onmessage = function (message) {
+        console.log("receiving: " + message.data);
+      };
+ 
+      socket.onclose = function(){
+        console.log("disconnected"); 
+      };
+ 
+      sendMessage = function(message) {
+        var splitmsg = message.substring(0,16) + "\n" + message.substring(16,message.lenght);
+        socket.send(splitmsg);
+        //socket.send(message);
+      };
+      
+      function inputKeyUp(e) {
+        e.which = e.which || e.keyCode;
+        if (e.which == 13)
+        {
+        sendMessage(document.getElementById("MessageInput").value);
+        }
+      }
+      
+      window.onload = function() {
+        document.getElementById("MessageInput").focus();
+      };
+  
+    </script>
+  </head>
+  <body>
+    <input Id="MessageInput" onkeyup="inputKeyUp(event)"></input>
+  </body>
+</html>

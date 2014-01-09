@@ -1,0 +1,90 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<style>		
+		body {
+			overflow	: hidden;
+			padding		: 0;
+			margin		: 0;
+			background-color: #BBB;
+		}
+		#info {
+			position	: absolute;
+			top			: 10px;
+			width		: 100%;
+			padding		: 5px;
+			text-align	: center;
+		}
+		#info a {
+			color		: #ffffff;
+			text-decoration	: none;
+		}
+		#info a:hover {
+			text-decoration	: underline;
+		}
+		#leftcolumn { width: 30%; height: 100%;border: 0px solid red; float: left;background-color: #6f89d4;-webkit-user-select: none; -moz-user-select: none;}
+		#rightcolumn { width: 69%; height: 100%;border: 0px solid red; float: right;background-color: #cb9e9e;-webkit-user-select: none; -moz-user-select: none;}
+		</style>
+	</head>
+    <script> 
+        function hideAddressBar()
+		{
+		  if(!window.location.hash)
+		  {
+		      if(document.height < window.outerHeight)
+		      {
+		          document.body.style.height = (window.outerHeight + 50) + 'px';
+		      }
+		 
+		      setTimeout( function(){ window.scrollTo(0, 1); }, 50 );
+		  }
+		}
+ 
+		window.addEventListener("load", function(){ if(!window.pageYOffset){ hideAddressBar(); } } );
+		window.addEventListener("orientationchange", hideAddressBar );
+    </script>
+	<body onload="setTimeout(function() { window.scrollTo(0, 1) }, 100);">
+		<div id="leftcolumn"><p></p></div>
+		<div id="rightcolumn"><p></p></div>
+        <div id="info">
+			<span id="result"></span>
+		</div> 
+		<script src="http://hannimal.dyndns.org/virtualjoystick.js"></script>
+		<script>
+            var socket = new WebSocket("ws://" + document.location.host + "/ws");
+            socket.onopen = function(){  
+                console.log("connected"); 
+            };
+            socket.onmessage = function (message) {
+                console.log("receiving: " + message.data);
+            };
+            socket.onclose = function(){
+                console.log("disconnected"); 
+            }; 
+            sendMessage = function(message) {
+                socket.send(message);
+            };
+			console.log("touchscreen is", VirtualJoystick.touchScreenAvailable() ? "available" : "not available");
+			var joystickdy	= new VirtualJoystick({
+				container	: document.getElementById('leftcolumn'),
+				mouseSupport	: true
+			});
+            var joystickdx    = new VirtualJoystick({
+				container	: document.getElementById('rightcolumn'),
+				mouseSupport	: true
+			});
+			setInterval(function(){
+                sendMessage(joystickdx.deltaX() + ' ' + joystickdy.deltaY());
+				var outputEl	= document.getElementById('result');
+				outputEl.innerHTML	= '<b>Result:</b> '
+					+ ' dx:'+joystickdx.deltaX()
+					+ ' dy:'+joystickdy.deltaY();		
+			}, 1/20 * 1000);
+		</script>
+	</body>
+</html>
